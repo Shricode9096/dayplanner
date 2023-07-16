@@ -50,22 +50,31 @@
     }
 
     .task-item {
-      display: flex;
-      align-items: center;
       margin-bottom: 10px;
     }
 
-    .task-item .checkbox {
-      margin-right: 10px;
+    .task-item .title {
+      font-weight: bold;
     }
 
-    .task-item .title {
-      flex-grow: 1;
+    .sub-task-items {
+      margin-top: 5px;
+      padding-left: 20px;
+      list-style-type: none;
+    }
+
+    .sub-task-item {
+      margin-bottom: 5px;
+    }
+
+    .sub-task-item .title {
+      font-weight: normal;
     }
 
     .task-item .actions {
       display: flex;
       align-items: center;
+      margin-top: 5px;
     }
 
     .task-item .actions button {
@@ -76,10 +85,6 @@
       padding: 5px 10px;
       border-radius: 4px;
       cursor: pointer;
-    }
-
-    .sub-task-item {
-      margin-left: 20px;
     }
 
     footer {
@@ -93,20 +98,6 @@
       color: white;
       border: none;
       padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .sub-task-input {
-      margin-left: 20px;
-      width: 200px;
-    }
-
-    .add-sub-task-button {
-      background-color: #333;
-      color: white;
-      border: none;
-      padding: 5px 10px;
       border-radius: 4px;
       cursor: pointer;
     }
@@ -150,10 +141,6 @@
       const taskItem = document.createElement('li');
       taskItem.classList.add('task-item');
 
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.classList.add('checkbox');
-
       const title = document.createElement('div');
       title.classList.add('title');
       title.contentEditable = true;
@@ -174,12 +161,15 @@
       addSubTaskButton.textContent = 'Add Subtask';
       addSubTaskButton.addEventListener('click', addSubTask);
 
+      const subTaskList = document.createElement('ul');
+      subTaskList.classList.add('sub-task-items');
+
       actions.appendChild(editButton);
       actions.appendChild(deleteButton);
       actions.appendChild(addSubTaskButton);
 
-      taskItem.appendChild(checkbox);
       taskItem.appendChild(title);
+      taskItem.appendChild(subTaskList);
       taskItem.appendChild(actions);
 
       return taskItem;
@@ -188,16 +178,13 @@
     function addSubTask(event) {
       const taskItem = event.target.parentNode.parentNode;
       const subTaskItem = createSubTaskItem();
-      taskItem.appendChild(subTaskItem);
+      const subTaskList = taskItem.querySelector('.sub-task-items');
+      subTaskList.appendChild(subTaskItem);
     }
 
     function createSubTaskItem() {
       const subTaskItem = document.createElement('li');
       subTaskItem.classList.add('sub-task-item');
-
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.classList.add('checkbox');
 
       const title = document.createElement('div');
       title.classList.add('title');
@@ -213,7 +200,6 @@
 
       actions.appendChild(deleteButton);
 
-      subTaskItem.appendChild(checkbox);
       subTaskItem.appendChild(title);
       subTaskItem.appendChild(actions);
 
@@ -237,21 +223,23 @@
       let yPos = 20;
 
       taskItems.forEach((taskItem) => {
-        const checkbox = taskItem.querySelector('.checkbox');
         const title = taskItem.querySelector('.title').textContent;
 
-        doc.text(20, yPos, `${checkbox.checked ? 'Completed' : 'Incomplete'}: ${title}`);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.text(20, yPos, title);
 
         const subTaskItems = taskItem.querySelectorAll('.sub-task-item');
         subTaskItems.forEach((subTaskItem) => {
-          const subCheckbox = subTaskItem.querySelector('.checkbox');
           const subTitle = subTaskItem.querySelector('.title').textContent;
 
           yPos += 10;
-          doc.text(30, yPos, `${subCheckbox.checked ? 'Completed' : 'Incomplete'}: ${subTitle}`);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(12);
+          doc.text(30, yPos, `- ${subTitle}`);
         });
 
-        yPos += 10;
+        yPos += 15;
       });
 
       doc.save('day_planner.pdf');
