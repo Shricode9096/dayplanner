@@ -78,6 +78,10 @@
       cursor: pointer;
     }
 
+    .sub-task-item {
+      margin-left: 20px;
+    }
+
     footer {
       background-color: #333;
       padding: 20px;
@@ -89,6 +93,20 @@
       color: white;
       border: none;
       padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .sub-task-input {
+      margin-left: 20px;
+      width: 200px;
+    }
+
+    .add-sub-task-button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 5px 10px;
       border-radius: 4px;
       cursor: pointer;
     }
@@ -152,14 +170,54 @@
       deleteButton.textContent = 'Delete';
       deleteButton.addEventListener('click', deleteTask);
 
+      const addSubTaskButton = document.createElement('button');
+      addSubTaskButton.textContent = 'Add Subtask';
+      addSubTaskButton.addEventListener('click', addSubTask);
+
       actions.appendChild(editButton);
       actions.appendChild(deleteButton);
+      actions.appendChild(addSubTaskButton);
 
       taskItem.appendChild(checkbox);
       taskItem.appendChild(title);
       taskItem.appendChild(actions);
 
       return taskItem;
+    }
+
+    function addSubTask(event) {
+      const taskItem = event.target.parentNode.parentNode;
+      const subTaskItem = createSubTaskItem();
+      taskItem.appendChild(subTaskItem);
+    }
+
+    function createSubTaskItem() {
+      const subTaskItem = document.createElement('li');
+      subTaskItem.classList.add('sub-task-item');
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.classList.add('checkbox');
+
+      const title = document.createElement('div');
+      title.classList.add('title');
+      title.contentEditable = true;
+      title.textContent = 'New Subtask';
+
+      const actions = document.createElement('div');
+      actions.classList.add('actions');
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', deleteTask);
+
+      actions.appendChild(deleteButton);
+
+      subTaskItem.appendChild(checkbox);
+      subTaskItem.appendChild(title);
+      subTaskItem.appendChild(actions);
+
+      return subTaskItem;
     }
 
     function editTask(event) {
@@ -176,13 +234,24 @@
       const taskItems = document.querySelectorAll('.task-item');
       const doc = new jsPDF();
 
-      taskItems.forEach((taskItem, index) => {
+      let yPos = 20;
+
+      taskItems.forEach((taskItem) => {
         const checkbox = taskItem.querySelector('.checkbox');
         const title = taskItem.querySelector('.title').textContent;
 
-        const yPos = index * 10 + 20; // Adjust the y-position for each task
-
         doc.text(20, yPos, `${checkbox.checked ? 'Completed' : 'Incomplete'}: ${title}`);
+
+        const subTaskItems = taskItem.querySelectorAll('.sub-task-item');
+        subTaskItems.forEach((subTaskItem) => {
+          const subCheckbox = subTaskItem.querySelector('.checkbox');
+          const subTitle = subTaskItem.querySelector('.title').textContent;
+
+          yPos += 10;
+          doc.text(30, yPos, `${subCheckbox.checked ? 'Completed' : 'Incomplete'}: ${subTitle}`);
+        });
+
+        yPos += 10;
       });
 
       doc.save('day_planner.pdf');
