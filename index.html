@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Better Day Planner</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      padding: 20px;
+      color: white;
+      text-align: center;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    .task-list {
+      margin-bottom: 30px;
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .add-task-button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .task-items {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .task-item .checkbox {
+      margin-right: 10px;
+    }
+
+    .task-item .title {
+      flex-grow: 1;
+    }
+
+    .task-item .actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .task-item .actions button {
+      margin-left: 5px;
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    footer {
+      background-color: #333;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .export-button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Better Day Planner</h1>
+  </header>
+  
+  <main>
+    <section class="task-list">
+      <div class="task-header">
+        <h2>Today's Tasks</h2>
+        <button class="add-task-button">Add Task</button>
+      </div>
+      <ul class="task-items">
+      </ul>
+    </section>
+  </main>
+  
+  <footer>
+    <button class="export-button">Export Day Plan</button>
+  </footer>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
+  <script>
+    const taskList = document.querySelector('.task-items');
+    const addTaskButton = document.querySelector('.add-task-button');
+    const exportButton = document.querySelector('.export-button');
+
+    addTaskButton.addEventListener('click', addTask);
+    exportButton.addEventListener('click', exportPlanner);
+
+    function addTask() {
+      const taskItem = createTaskItem();
+      taskList.appendChild(taskItem);
+    }
+
+    function createTaskItem() {
+      const taskItem = document.createElement('li');
+      taskItem.classList.add('task-item');
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.classList.add('checkbox');
+
+      const title = document.createElement('div');
+      title.classList.add('title');
+      title.contentEditable = true;
+      title.textContent = 'New Task';
+
+      const actions = document.createElement('div');
+      actions.classList.add('actions');
+
+      const editButton = document.createElement('button');
+      editButton.textContent = 'Edit';
+      editButton.addEventListener('click', editTask);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', deleteTask);
+
+      actions.appendChild(editButton);
+      actions.appendChild(deleteButton);
+
+      taskItem.appendChild(checkbox);
+      taskItem.appendChild(title);
+      taskItem.appendChild(actions);
+
+      return taskItem;
+    }
+
+    function editTask(event) {
+      const titleElement = event.target.parentNode.parentNode.querySelector('.title');
+      titleElement.focus();
+    }
+
+    function deleteTask(event) {
+      const taskItem = event.target.parentNode.parentNode;
+      taskItem.parentNode.removeChild(taskItem);
+    }
+
+    function exportPlanner() {
+      const taskItems = document.querySelectorAll('.task-item');
+      const doc = new jsPDF();
+
+      taskItems.forEach((taskItem, index) => {
+        const checkbox = taskItem.querySelector('.checkbox');
+        const title = taskItem.querySelector('.title').textContent;
+
+        const yPos = index * 10 + 20; // Adjust the y-position for each task
+
+        doc.text(20, yPos, `${checkbox.checked ? 'Completed' : 'Incomplete'}: ${title}`);
+      });
+
+      doc.save('day_planner.pdf');
+    }
+  </script>
+</body>
+</html>
