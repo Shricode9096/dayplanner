@@ -1,248 +1,174 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Better Day Planner</title>
+  <title>Day Planner</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    /* CSS styles */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #taskList {
+      margin-bottom: 20px;
+    }
+
+    ul {
+      list-style-type: none;
       padding: 0;
     }
 
-    header {
-      background-color: #333;
-      padding: 20px;
-      color: white;
-      text-align: center;
-    }
-
-    main {
-      padding: 20px;
-    }
-
-    .task-list {
-      margin-bottom: 30px;
-    }
-
-    .task-header {
+    li {
+      margin-bottom: 10px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
+      align-items: flex-start;
     }
 
-    .add-task-button {
-      background-color: #333;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .task-items {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    .task-item {
-      margin-bottom: 10px;
-    }
-
-    .task-item .title {
+    .task-name {
       font-weight: bold;
+      flex-grow: 1;
     }
 
-    .sub-task-items {
-      margin-top: 5px;
-      padding-left: 20px;
-      list-style-type: none;
+    .subtask-name {
+      flex-grow: 1;
     }
 
-    .sub-task-item {
+    .buttons {
+      flex-shrink: 0;
+      margin-left: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      cursor: pointer;
       margin-bottom: 5px;
     }
 
-    .sub-task-item .title {
-      font-weight: normal;
-    }
-
-    .task-item .actions {
-      display: flex;
-      align-items: center;
-      margin-top: 5px;
-    }
-
-    .task-item .actions button {
-      margin-left: 5px;
-      background-color: #333;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    footer {
-      background-color: #333;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .export-button {
-      background-color: #333;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
+    button:hover {
+      background-color: #555;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Day Planner</h1>
-  </header>
-  
-  <main>
-    <section class="task-list">
-      <div class="task-header">
-        <h2>Today's Tasks</h2>
-        <button class="add-task-button">Add Task</button>
-      </div>
-      <ul class="task-items">
-      </ul>
-    </section>
-  </main>
-  
-  <footer>
-    <button class="export-button">Export Day Plan</button>
-  </footer>
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.3/jspdf.umd.min.js"></script>
-  <script>
-    const taskList = document.querySelector('.task-items');
-    const addTaskButton = document.querySelector('.add-task-button');
-    const exportButton = document.querySelector('.export-button');
+  <h1>Day Planner</h1>
 
-    addTaskButton.addEventListener('click', addTask);
-    exportButton.addEventListener('click', exportPlanner);
+  <div id="taskList">
+    <h2>Tasks</h2>
+    <ul id="tasks"></ul>
+    <button onclick="addTask()">Add Task</button>
+    <button onclick="exportDayPlan()">Export Day Plan (PDF)</button>
+  </div>
+
+  <script>
+    // JavaScript code
+    const tasks = [];
 
     function addTask() {
-      const taskItem = createTaskItem();
-      taskList.appendChild(taskItem);
+      const taskName = prompt('Enter task name:');
+      if (taskName) {
+        const task = {
+          name: taskName,
+          subtasks: [],
+          datetime: null
+        };
+        tasks.push(task);
+        renderTasks();
+      }
     }
 
-    function createTaskItem() {
-      const taskItem = document.createElement('li');
-      taskItem.classList.add('task-item');
-
-      const title = document.createElement('div');
-      title.classList.add('title');
-      title.contentEditable = true;
-      title.textContent = 'New Task';
-
-      const actions = document.createElement('div');
-      actions.classList.add('actions');
-
-      const editButton = document.createElement('button');
-      editButton.textContent = 'Edit';
-      editButton.addEventListener('click', editTask);
-
-      const deleteButton = document.createElement('button');
-      deleteButton.textContent = 'Delete';
-      deleteButton.addEventListener('click', deleteTask);
-
-      const addSubTaskButton = document.createElement('button');
-      addSubTaskButton.textContent = 'Add Subtask';
-      addSubTaskButton.addEventListener('click', addSubTask);
-
-      const subTaskList = document.createElement('ul');
-      subTaskList.classList.add('sub-task-items');
-
-      actions.appendChild(editButton);
-      actions.appendChild(deleteButton);
-      actions.appendChild(addSubTaskButton);
-
-      taskItem.appendChild(title);
-      taskItem.appendChild(subTaskList);
-      taskItem.appendChild(actions);
-
-      return taskItem;
+    function addSubtask(taskIndex) {
+      const subtaskName = prompt('Enter subtask name:');
+      if (subtaskName) {
+        const subtask = {
+          name: subtaskName
+        };
+        tasks[taskIndex].subtasks.push(subtask);
+        renderTasks();
+      }
     }
 
-    function addSubTask(event) {
-      const taskItem = event.target.parentNode.parentNode;
-      const subTaskItem = createSubTaskItem();
-      const subTaskList = taskItem.querySelector('.sub-task-items');
-      subTaskList.appendChild(subTaskItem);
+    function removeTask(taskIndex) {
+      tasks.splice(taskIndex, 1);
+      renderTasks();
     }
 
-    function createSubTaskItem() {
-      const subTaskItem = document.createElement('li');
-      subTaskItem.classList.add('sub-task-item');
-
-      const title = document.createElement('div');
-      title.classList.add('title');
-      title.contentEditable = true;
-      title.textContent = 'New Subtask';
-
-      const actions = document.createElement('div');
-      actions.classList.add('actions');
-
-      const deleteButton = document.createElement('button');
-      deleteButton.textContent = 'Delete';
-      deleteButton.addEventListener('click', deleteTask);
-
-      actions.appendChild(deleteButton);
-
-      subTaskItem.appendChild(title);
-      subTaskItem.appendChild(actions);
-
-      return subTaskItem;
+    function removeSubtask(taskIndex, subtaskIndex) {
+      tasks[taskIndex].subtasks.splice(subtaskIndex, 1);
+      renderTasks();
     }
 
-    function editTask(event) {
-      const titleElement = event.target.parentNode.parentNode.querySelector('.title');
-      titleElement.focus();
+    function updateTask(taskIndex) {
+      const taskName = prompt('Enter new task name:');
+      if (taskName) {
+        tasks[taskIndex].name = taskName;
+        renderTasks();
+      }
     }
 
-    function deleteTask(event) {
-      const taskItem = event.target.parentNode.parentNode;
-      taskItem.parentNode.removeChild(taskItem);
+    function exportDayPlan() {
+      // Implement your logic for exporting the day plan as a PDF
+      alert('Exporting Day Plan...');
     }
 
-    function exportPlanner() {
-      const taskItems = document.querySelectorAll('.task-item');
-      const doc = new jsPDF();
+    function renderTasks() {
+      const tasksElement = document.getElementById('tasks');
+      tasksElement.innerHTML = '';
 
-      let yPos = 20;
+      tasks.forEach((task, taskIndex) => {
+        const taskItem = document.createElement('li');
 
-      taskItems.forEach((taskItem) => {
-        const title = taskItem.querySelector('.title').textContent;
+        const taskNameElement = document.createElement('span');
+        taskNameElement.classList.add('task-name');
+        taskNameElement.textContent = task.name;
+        taskItem.appendChild(taskNameElement);
 
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(16);
-        doc.text(20, yPos, title);
+        const subtasksList = document.createElement('ul');
+        task.subtasks.forEach((subtask, subtaskIndex) => {
+          const subtaskItem = document.createElement('li');
+          subtaskItem.classList.add('subtask-name');
+          subtaskItem.textContent = subtask.name;
+          subtasksList.appendChild(subtaskItem);
 
-        const subTaskItems = taskItem.querySelectorAll('.sub-task-item');
-        subTaskItems.forEach((subTaskItem) => {
-          const subTitle = subTaskItem.querySelector('.title').textContent;
-
-          yPos += 10;
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(12);
-          doc.text(30, yPos, `- ${subTitle}`);
+          const removeSubtaskButton = document.createElement('button');
+          removeSubtaskButton.textContent = 'Remove Subtask';
+          removeSubtaskButton.addEventListener('click', () => removeSubtask(taskIndex, subtaskIndex));
+          subtaskItem.appendChild(removeSubtaskButton);
         });
 
-        yPos += 15;
-      });
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.classList.add('buttons');
 
-      doc.save('day_planner.pdf');
+        const addSubtaskButton = document.createElement('button');
+        addSubtaskButton.textContent = '+';
+        addSubtaskButton.title = 'Add Subtask';
+        addSubtaskButton.addEventListener('click', () => addSubtask(taskIndex));
+        buttonsContainer.appendChild(addSubtaskButton);
+
+        const removeTaskButton = document.createElement('button');
+        removeTaskButton.textContent = '-';
+        removeTaskButton.title = 'Remove Task';
+        removeTaskButton.addEventListener('click', () => removeTask(taskIndex));
+        buttonsContainer.appendChild(removeTaskButton);
+
+        const updateTaskButton = document.createElement('button');
+        updateTaskButton.textContent = 'Edit';
+        updateTaskButton.title = 'Update Task';
+        updateTaskButton.addEventListener('click', () => updateTask(taskIndex));
+        buttonsContainer.appendChild(updateTaskButton);
+
+        taskItem.appendChild(subtasksList);
+        taskItem.appendChild(buttonsContainer);
+
+        tasksElement.appendChild(taskItem);
+      });
     }
   </script>
 </body>
